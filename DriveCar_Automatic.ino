@@ -79,6 +79,9 @@ void loop()
       analogWrite(3, maxSpeed);  
       analogWrite(11, maxSpeed);    
       nunchuk.update();
+      if( nunchuk.zButton == 1){
+        autonomous();  
+      }
     }
   }
   
@@ -153,6 +156,13 @@ void autonomous()
     // establish variables for duration of the ping, 
     // and the distance result in inches and centimeters:
     long duration, inches, cm;
+    digitalWrite(12, HIGH); //Establishes forward direction of Channel A
+    digitalWrite(9, LOW);   //Disengage the Brake for Channel A
+    digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
+    digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+    
+    analogWrite(3, 255); 
+    analogWrite(11, 255); 
   
     // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
     // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
@@ -173,17 +183,31 @@ void autonomous()
     inches = microsecondsToInches(duration);
     cm = microsecondsToCentimeters(duration);
     
-    
-    nunchuk.update();
-    if(nunchuk.zButton == 1){
-      x = 0; 
+    if( inches <= 1 ){
+        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
+        digitalWrite(9, LOW);   //Disengage the Brake for Channel A      
+        digitalWrite(13, LOW);  //Establishes backward direction of Channel B
+        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+        analogWrite(3, 255);  
+        analogWrite(11, 255);  
+        delay(500);
+        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
+        digitalWrite(9, LOW);   //Disengage the Brake for Channel A
+        digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
+        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+        //check to see if want to exit
+        nunchuk.update();
+        if(nunchuk.zButton == 1){
+          x = 0; 
+        }
+        
     }
     
-    Serial.print(inches);
-    Serial.print("in, ");
-    Serial.print(cm);
-    Serial.print("cm");
-    Serial.println();
+    //Serial.print(inches);
+    //Serial.print("in, ");
+    //Serial.print(cm);
+    //Serial.print("cm");
+    //Serial.println();
     
     delay(100);
     nunchuk.update();
