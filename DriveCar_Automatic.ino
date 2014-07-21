@@ -1,12 +1,9 @@
 #include <Wire.h>
-#include <ArduinoNunchuk.h>
 
-ArduinoNunchuk nunchuk = ArduinoNunchuk();
-int needSetUpA = 0;
-int needSetUpB = 0;
-int needSetUpC = 0;
-int needSetUpD = 0;
 const int pingPin = 7;
+long randNumber;
+int driveSetUp = 0;
+const int speedValue = 100;
 
 void setup()
 {
@@ -18,151 +15,26 @@ void setup()
   pinMode(13, OUTPUT); //Initiates Motor Channel A pin
   pinMode(8, OUTPUT);  //Initiates Brake Channel A pin
   
-  nunchuk.init();
-  Serial.begin(9600);
+  //Serial.begin(9600);
+  randomSeed(analogRead(0));
 }
 
 void loop()
 {
-  nunchuk.update();
-  if( nunchuk.zButton == 1){
-    autonomous();  
-  }
-
-  while(nunchuk.analogY > 135){
-    if(needSetUpA == 0){
-        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A
-        digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        needSetUpA = 1;
-        needSetUpB = 0;
-        needSetUpC = 0;
-        needSetUpD = 0;
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    } else {
-        int maxSpeed = (nunchuk.analogY - 130) * 3;
-        if (maxSpeed > 255){
-          maxSpeed = 255;
-        }
-        analogWrite(3, maxSpeed); 
-        analogWrite(11, maxSpeed);    
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    }
-  }
-  
-  while( nunchuk.analogY < 120){
-    if(needSetUpB == 0){
-        digitalWrite(12, LOW); //Establishes backward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A      
-        digitalWrite(13, LOW);  //Establishes backward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        needSetUpB = 1;
-        needSetUpA = 0;
-        needSetUpC = 0;
-        needSetUpD = 0;
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    } else {
-      int maxSpeed = (120 - nunchuk.analogY) * 3;
-      if (maxSpeed > 255){
-        maxSpeed = 255;  
-      }
-      analogWrite(3, maxSpeed);  
-      analogWrite(11, maxSpeed);    
-      nunchuk.update();
-      if( nunchuk.zButton == 1){
-        autonomous();  
-      }
-    }
-  }
-  
-  while (nunchuk.analogX > 130){
-      if(needSetUpC == 0){
-        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A      
-        digitalWrite(13, LOW);  //Establishes backward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        needSetUpB = 0;
-        needSetUpA = 0;
-        needSetUpC = 1;
-        needSetUpD = 0;
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-      } else {
-        int maxSpeed = (nunchuk.analogX - 130) * 3;
-        if (maxSpeed > 255){
-          maxSpeed = 255;
-        }
-        analogWrite(3, maxSpeed); 
-        analogWrite(11, maxSpeed);   
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    }
-  }
-  
-  while( nunchuk.analogX < 120){
-    if(needSetUpD == 0){
-        digitalWrite(12, LOW); //Establishes backward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A      
-        digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        needSetUpB = 0;
-        needSetUpA = 0;
-        needSetUpC = 0;
-        needSetUpD = 1;
-        nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    } else {
-      int maxSpeed = (120 - nunchuk.analogX) * 3;
-      if (maxSpeed > 255){
-        maxSpeed = 255;  
-      }
-      analogWrite(3, maxSpeed); 
-      analogWrite(11, maxSpeed);  
-      nunchuk.update();
-        if( nunchuk.zButton == 1){
-          autonomous();  
-        }
-    }
-  }
-  
-  digitalWrite(9, HIGH);  //Engage the Brake for Channel A
-  digitalWrite(8, HIGH);  //Engage the Brake for Channel B
-  needSetUpA = 0;
-  needSetUpB = 0;
-  needSetUpC = 0;
-  needSetUpD = 0;
-}
-
-void autonomous()
-{
-  int x = 1;
-  while(x){
+    randNumber = random(1, 10001);
     // establish variables for duration of the ping, 
     // and the distance result in inches and centimeters:
     long duration, inches, cm;
-    digitalWrite(12, HIGH); //Establishes forward direction of Channel A
-    digitalWrite(9, LOW);   //Disengage the Brake for Channel A
-    digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
-    digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+    if (driveSetUp == 0){
+      digitalWrite(12, HIGH); //Establishes forward direction of Channel A
+      digitalWrite(9, LOW);   //Disengage the Brake for Channel A
+      digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
+      digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+      driveSetUp = 1;
+    }
     
-    analogWrite(3, 255); 
-    analogWrite(11, 255); 
+    analogWrite(3, speedValue); 
+    analogWrite(11, speedValue); 
   
     // The PING))) is triggered by a HIGH pulse of 2 or more microseconds.
     // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
@@ -183,24 +55,9 @@ void autonomous()
     inches = microsecondsToInches(duration);
     cm = microsecondsToCentimeters(duration);
     
-    if( inches <= 1 ){
-        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A      
-        digitalWrite(13, LOW);  //Establishes backward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        analogWrite(3, 255);  
-        analogWrite(11, 255);  
-        delay(500);
-        digitalWrite(12, HIGH); //Establishes forward direction of Channel A
-        digitalWrite(9, LOW);   //Disengage the Brake for Channel A
-        digitalWrite(13, HIGH);  //Establishes forward direction of Channel B
-        digitalWrite(8, LOW);   //Disengage the Brake for Channel B
-        //check to see if want to exit
-        nunchuk.update();
-        if(nunchuk.zButton == 1){
-          x = 0; 
-        }
-        
+    if( inches <= 0.5 ){   
+     long randGo = random(0,2); 
+      turn(randGo);
     }
     
     //Serial.print(inches);
@@ -208,13 +65,22 @@ void autonomous()
     //Serial.print(cm);
     //Serial.print("cm");
     //Serial.println();
-    
-    delay(100);
-    nunchuk.update();
-    if(nunchuk.zButton == 1){
-      x = 0; 
-    }
+}
+
+void turn(int direction){
+  int wheel;
+  if (direction){
+    wheel = 13;
+  } else {
+    wheel = 12;
   }
+  digitalWrite(wheel, LOW);  //Establishes backward direction of Channel B
+  digitalWrite(8, LOW);   //Disengage the Brake for Channel B
+  analogWrite(3, speedValue);  
+  analogWrite(11, speedValue);  
+  delay(400);
+  digitalWrite(wheel, HIGH);  //Establishes forward direction of Channel B
+  digitalWrite(8, LOW);   //Disengage the Brake for Channel B
 }
 
 long microsecondsToInches(long microseconds)
