@@ -4,6 +4,7 @@ const int pingPin = 7;
 long randNumber;
 int driveSetUp = 0;
 const int speedValue = 100;
+int time = 0;
 
 void setup()
 {
@@ -15,7 +16,7 @@ void setup()
   pinMode(13, OUTPUT); //Initiates Motor Channel A pin
   pinMode(8, OUTPUT);  //Initiates Brake Channel A pin
   
-  //Serial.begin(9600);
+  Serial.begin(9600);
   randomSeed(analogRead(0));
 }
 
@@ -55,16 +56,17 @@ void loop()
     inches = microsecondsToInches(duration);
     cm = microsecondsToCentimeters(duration);
     
-    if( inches <= 0.5 ){   
+    if( inches <= 3 && time > 10){
+     time = 0;   
      long randGo = random(0,2); 
       turn(randGo);
     }
     
-    //Serial.print(inches);
-    //Serial.print("in, ");
-    //Serial.print(cm);
-    //Serial.print("cm");
-    //Serial.println();
+    Serial.print(inches);
+    Serial.print("in, ");
+    Serial.print(cm);
+    Serial.print("cm");
+    Serial.println();
 }
 
 void turn(int direction){
@@ -85,6 +87,7 @@ void turn(int direction){
 
 long microsecondsToInches(long microseconds)
 {
+  time++;
   // According to Parallax's datasheet for the PING))), there are
   // 73.746 microseconds per inch (i.e. sound travels at 1130 feet per
   // second).  This gives the distance travelled by the ping, outbound
